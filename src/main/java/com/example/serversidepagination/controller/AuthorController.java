@@ -1,80 +1,82 @@
 package com.example.serversidepagination.controller;
 
 import com.example.serversidepagination.entity.Author;
-import com.example.serversidepagination.service.AuthorServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.serversidepagination.repo.AuthorRepo;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import javax.validation.Valid;
-import java.util.List;
+import java.util.Date;
 
 @Controller
 public class AuthorController {
 
-    private final AuthorServiceImpl authorService;
+    private final AuthorRepo authorRepo;
 
-    @Autowired
-    public AuthorController(AuthorServiceImpl authorService) {
-        this.authorService = authorService;
+    public AuthorController(AuthorRepo authorRepo) {
+        this.authorRepo = authorRepo;
     }
 
-    @GetMapping("/")
-    public String viewHomePage(Model model){
-        return findPaginated(1,"name","asc",model);
+    @GetMapping("/authors/authorList")
+    public String showAuthors() {
+        return "author-list";
     }
 
-    @GetMapping("/showNewAuthor")
-    public String showNewAuthorForm(Model model){
-        Author author = new Author();
+    @GetMapping("/authors/newAuthor")
+    public String showAuthorForm(Model model) {
+        model.addAttribute("author", new Author());
+        return "author-form";
+    }
+
+    @PostMapping("/authors/saveAuthor")
+    public String saveAuthor(@Valid Author author, BindingResult result, RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            redirectAttributes.addFlashAttribute("saveError", true);
+            return "author-form";
+        }
+        Date currentDate = new Date();
+        if (author.getDateOfBirth() != null && author.getDateOfBirth().after(currentDate)){
+            redirectAttributes.addFlashAttribute("dateOfBirthError", true);
+            return "author-form";
+        }
+        authorRepo.save(author);
+        redirectAttributes.addFlashAttribute("saveSuccess", true);
+
+        return "redirect:/authors/authorList";
+    }
+
+    @GetMapping("/authors/editAuthor/{id}")
+    public String showEditAuthorForm(@PathVariable("id") Long id, Model model) {
+        Author author = authorRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid author ID: " + id));
         model.addAttribute("author", author);
-        return "author_form";
+        return "edit-author";
     }
 
-    @PostMapping("/saveAuthor")
-    public String saveEmployee(@ModelAttribute ("author") Author author){
-        authorService.saveAuthor(author);
-        return "redirect:/";
+    @PostMapping("/authors/editAuthor/{id}")
+    public String updateAuthor(@PathVariable("id") Long id, @Valid Author author, BindingResult result) {
+        if (result.hasErrors()) {
+            return "edit-author";
+        }
+        Author existingAuthor = authorRepo.getById(id);
+        existingAuthor.setName(author.getName());
+        existingAuthor.setDateOfBirth(author.getDateOfBirth());
+        existingAuthor.setAddress(author.getAddress());
+
+        authorRepo.save(existingAuthor);
+        return "redirect:/authors/authorList";
     }
 
-    @GetMapping("/showFormForUpdate/{id}")
-    public String showFormForUpdate(@PathVariable(value = "id") long id, Model model){
-        Author author = authorService.getAuthorById(id);
-        model.addAttribute("author", author);
-        return "update_author";
+    @GetMapping("/authors/deleteAuthor/{id}")
+    public String deleteAuthor(@PathVariable("id") Long id) {
+        authorRepo.deleteById(id);
+        return "redirect:/authors/authorList";
     }
-
-    @GetMapping("/deleteAuthor/{id}")
-    public String deleteAuthor(@PathVariable(value = "id") long id){
-        authorService.deleteAuthorById(id);
-        return "redirect:/";
-    }
-
-    @GetMapping("/page/{pageNo}")
-    public String findPaginated(@PathVariable (value = "pageNo") int pageNo,
-                                @RequestParam("sortField") String sortField,
-                            @RequestParam("sorDir") String sortDir, Model model){
-
-        int pageSize = 10;
-
-        Page<Author> page = authorService.findPaginated(pageNo,pageSize,sortField,sortDir);
-        List<Author> authors = page.getContent();
-
-        model.addAttribute("currentPage", pageNo);
-        model.addAttribute("totalPages", page.getTotalPages());
-        model.addAttribute("totalItems", page.getTotalElements());
-
-        model.addAttribute("sortField", sortField);
-        model.addAttribute("sortDir", sortDir);
-        model.addAttribute("reverseSortDir", sortDir.equals("asc")? "desc" : "asc");
-
-        model.addAttribute("authors", authors);
-        return "list_author";
-
-    }
-
 }
 

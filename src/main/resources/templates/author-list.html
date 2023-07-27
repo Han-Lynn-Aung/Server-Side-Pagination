@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Author List</title>
+  <!-- Include DataTables CSS -->
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css" rel="stylesheet">
+</head>
+<body>
+<h2 th:align="center">Author List</h2>
+<a class="btn btn-primary" th:href="@{/authors/newAuthor}">Add New Author</a>
+<a class="btn btn-info" th:href="@{/books/bookList}">View Books</a>
+<table id="authorTable" class="table table-striped">
+  <thead>
+  <tr>
+    <th>ID</th>
+    <th>Name</th>
+    <th>Date of Birth</th>
+    <th>Address</th>
+    <th>Actions</th>
+  </tr>
+  </thead>
+</table>
+
+<!-- Include jQuery and DataTables JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.2/js/jquery.dataTables.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    $('#authorTable').DataTable({
+      processing: true,
+      serverSide: true,
+      ajax: {
+        url: '/api/authors',
+        type: 'GET'
+      },
+      columns: [
+        { data: 'id' },
+        { data: 'name' },
+        { data: 'dateOfBirth' },
+        { data: 'address' },
+        {
+          data: null,
+          orderable: false, // Disable sorting for actions column
+          render: function(data, type, row) {
+            return '<a href="/authors/editAuthor/' + data.id + '">Edit</a>' +
+                    ' | <a href="/authors/deleteAuthor/' + data.id + '" onclick="return confirm(\'Are you sure you want to delete this author?\')">Delete</a>';
+          }
+        }
+      ]
+    });
+  });
+</script>
+</body>
+</html>

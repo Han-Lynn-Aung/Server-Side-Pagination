@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Book List</title>
+  <!-- Include necessary CSS and JS files -->
+  <!-- Example: Using Bootstrap CSS -->
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css" rel="stylesheet">
+</head>
+<body>
+<h2 th:align="center">Book List</h2>
+<a class="btn btn-primary" th:href="@{/books/newBook}">Add New Book</a>
+<a class="btn btn-info" th:href="@{/authors/authorList}">View Authors</a>
+<table class="table table-striped" id="bookTable" >
+  <thead>
+  <tr>
+    <th>ID</th>
+    <th>Title</th>
+    <th>Genre</th>
+    <th>Published Date</th>
+    <th>Author</th>
+    <th>Actions</th>
+  </tr>
+  </thead>
+</table>
+
+<!-- Include jQuery and DataTables JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.2/js/jquery.dataTables.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    $('#bookTable').DataTable({
+      processing: true,
+      serverSide: true,
+      ajax: {
+        url: '/api/books',
+        type: 'GET',
+      },
+      columns: [
+        { data: 'id' },
+        { data: 'title' },
+        { data: 'genre' },
+        { data: 'publishedDate' },
+        { data: 'author.name' }, // Assuming Author has a 'name' field
+        {
+          data: null,
+          orderable: false,
+          render: function(data, type, row) {
+            return '<a href="/books/editBook/' + data.id + '">Edit</a>' +
+                    ' | <a href="/books/deleteBook/' + data.id + '" onclick="return confirm(\'Are you sure you want to delete this book?\')">Delete</a>';
+          }
+        }
+      ]
+    });
+  });
+</script>
+</body>
+</html>
