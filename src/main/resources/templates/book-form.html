@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <h2>Book Form</h2>
+
+    <form method="post" th:action="@{/books/saveBook}" th:object="${book}">
+        <input th:field="*{id}" type="hidden"/>
+        <div class="form-group">
+            <label for="title">Title:</label>
+            <input class="form-control" id="title" required th:field="*{title}" type="text"/>
+        </div>
+
+        <div class="form-group">
+            <label for="genre">Genre:</label>
+            <input class="form-control" id="genre" required th:field="*{genre}" type="text"/>
+        </div>
+
+        <div class="form-group">
+            <label for="publishedDate">Published Date:</label>
+            <input class="form-control" id="publishedDate" pattern="yyyy-MM-dd" required th:field="*{publishedDate}" type="date" th:value="${#dates.format(book.publishedDate)}"/>
+        </div>
+
+        <div th:if="${#fields.hasErrors('publishedDate')}" class="alert alert-danger">
+            <p th:errors="*{publishedDate}">Invalid date format. Please use yyyy-MM-dd.</p>
+        </div>
+
+        <div class="form-group">
+            <label for="author">Author:</label>
+            <select class="form-control" id="author" th:field="*{author.id}">
+                <option th:each="author : ${authors}" th:value="${author.id}" th:text="${author.name}"></option>
+            </select>
+        </div>
+
+        <button class="btn btn-primary" type="submit">Save</button>
+    </form>
+
+    <a class="btn btn-secondary" th:href="@{/books/bookList}">Back to List</a>
+</div>
+
+<!-- Include necessary JS and jQuery (for validation) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    // Client-side form validation using jQuery
+    $(document).ready(function () {
+        $("form").submit(function () {
+            var isValid = true;
+            $("input[type='text'], input[type='date']").each(function () {
+                if (!$(this).val()) {
+                    $(this).addClass("is-invalid");
+                    isValid = false;
+                } else {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+            return isValid;
+        });
+    });
+</script>
+</body>
+</html>

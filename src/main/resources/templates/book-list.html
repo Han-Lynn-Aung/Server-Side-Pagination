@@ -11,7 +11,19 @@
 <h2 th:align="center">Book List</h2>
 <a class="btn btn-primary" th:href="@{/books/newBook}">Add New Book</a>
 <a class="btn btn-info" th:href="@{/authors/authorList}">View Authors</a>
-<table class="table table-striped" id="bookTable" >
+
+<div class="row mb-3 justify-content-start">
+  <div class="col-auto">
+    <select class="form-control form-control-sm" id="filter">
+      <option value="">Filter by</option>
+      <option value="author">Author</option>
+      <option value="title">Title</option>
+      <option value="genre">Genre</option>
+    </select>
+  </div>
+</div>
+
+<table class="table table-striped" id="bookTable">
   <thead>
   <tr>
     <th>ID</th>
@@ -26,11 +38,29 @@
 
 <!-- Include jQuery and DataTables JS -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.2/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 
 <script>
-  $(document).ready(function() {
-    $('#bookTable').DataTable({
+  $(document).ready(function () {
+    var table;
+
+    function populateDropdown(dropdownId, data) {
+      var dropdown = $('#' + dropdownId);
+      dropdown.empty();
+      dropdown.append($('<option>').val('').text('Select a ' + dropdownId.charAt(0).toUpperCase() + dropdownId.slice(1)));
+      $.each(data, function (index, item) {
+        dropdown.append($('<option>').val(item).text(item));
+      });
+    }
+
+    function fetchDataForDropdown(dropdownId) {
+      $.getJSON('/api/filters', { filter: dropdownId }, function (data) {
+        populateDropdown(dropdownId, data.data);
+      });
+    }
+
+    // Initialize the DataTable
+    table = $('#bookTable').DataTable({
       processing: true,
       serverSide: true,
       ajax: {
@@ -42,7 +72,7 @@
         { data: 'title' },
         { data: 'genre' },
         { data: 'publishedDate' },
-        { data: 'author.name' }, // Assuming Author has a 'name' field
+        { data: 'author.name' },
         {
           data: null,
           orderable: false,
@@ -52,6 +82,40 @@
           }
         }
       ]
+    });
+
+    // Fetch data for the author dropdown
+    fetchDataForDropdown('authorFilter');
+
+    // Handle dropdown change event to update the table with selected filter
+    $('#filter').on('change', function() {
+      var selectedFilter = $(this).val();
+
+      // Get the selected filter value directly
+      var filterValue = $('#' + selectedFilter + 'Filter').val();
+
+      // Clear existing table data
+      table.clear().draw();
+
+      // Fetch books filtered by selected filter and value using AJAX
+      $.ajax({
+        url: '/api/books',
+        method: 'GET',
+        data: {
+          [selectedFilter + 'Filter']: filterValue
+        },
+        success: function (response) {
+          // Output the fetched data for debugging
+          console.log('Fetched Books:', response.data);
+
+          // Reload the DataTable with the updated data
+          table.ajax.reload();
+        },
+        error: function (error) {
+          console.log('Error fetching books for the selected filter');
+          console.log(error);
+        }
+      });
     });
   });
 </script>

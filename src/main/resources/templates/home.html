@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Home</title>
+    <!-- Include necessary CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <h2>Welcome to the Home Page!</h2>
+    <p>Content of the home page goes here.</p>
+    <p>For demonstration purposes, here are links to the Author List and Book List:</p>
+    <ul>
+        <li><a th:href="@{/authors/authorList}">View Authors</a></li>
+        <li><a th:href="@{/books/bookList}">View Books</a></li>
+    </ul>
+</div>
+
+<!-- Include necessary JS files -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

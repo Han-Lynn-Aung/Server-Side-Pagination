@@ -4,13 +4,12 @@ import com.example.serversidepagination.entity.Author;
 import com.example.serversidepagination.entity.Book;
 import com.example.serversidepagination.repo.AuthorRepo;
 import com.example.serversidepagination.repo.BookRepo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
@@ -24,7 +23,7 @@ public class BookController {
 
     private final AuthorRepo authorRepo;
 
-    public BookController(BookRepo bookRepo,AuthorRepo authorRepo) {
+    public BookController(BookRepo bookRepo, AuthorRepo authorRepo) {
         this.authorRepo = authorRepo;
         this.bookRepo = bookRepo;
     }
@@ -85,6 +84,7 @@ public class BookController {
         model.addAttribute("authors", authors); // Add the list of authors to the model
         return "edit-book";
     }
+
     @PostMapping("/books/editBook/{id}")
     public String updateBook(@PathVariable("id") Long id, @Valid Book book, BindingResult result) {
         if (result.hasErrors()) {
@@ -94,10 +94,10 @@ public class BookController {
         }
 
         Book existingBook = bookRepo.findById(id).orElseThrow(
-                ()-> new IllegalArgumentException("Invalid Book ID : " + id)
+                () -> new IllegalArgumentException("Invalid Book ID : " + id)
         );
 
-        if (existingBook == null){
+        if (existingBook == null) {
             return "redirect:/books/bookList";
         }
 
@@ -122,6 +122,7 @@ public class BookController {
         bookRepo.save(existingBook);
         return "redirect:/books/bookList";
     }
+
     @GetMapping("/books/deleteBook/{id}")
     public String deleteBook(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         Optional<Book> bookOptional = bookRepo.findById(id);

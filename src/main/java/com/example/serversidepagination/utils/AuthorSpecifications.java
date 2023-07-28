@@ -11,8 +11,8 @@ public class AuthorSpecifications {
             }
             String searchPattern = "%" + searchValue.toLowerCase() + "%";
             return criteriaBuilder.or(
-                    criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), searchPattern),
-                    criteriaBuilder.like(criteriaBuilder.lower(root.get("address")), searchPattern)
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), searchPattern)
+                   /* criteriaBuilder.like(criteriaBuilder.lower(root.get("address")), searchPattern)*/
             );
         };
     }
